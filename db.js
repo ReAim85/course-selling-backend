@@ -13,7 +13,7 @@ const Courses = new Schema({
     name: String,
     author: String,
     authorid: ObjectId,
-    price: Int32Array,
+    price: Number,
 
 });
 

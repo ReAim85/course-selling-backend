@@ -1,50 +1,23 @@
 require('dotenv').config();
 const express = require('express');
-const auth = require('./auth.js');
-const mongoose = require('mongose');
+const authMiddleware = require('./auth.js');
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt')
 const { AdminModel, CoursesModel, UserModel, UserCoursesModel } = require('./db.js');
+const userRouter = require('./routes/user.js');
+const adminRouter = require('./routes/admin.js');
+const couresRouter = require('./routes/course.js');
+const DB = process.env.DB;
+
+mongoose.connect(DB);
 
 const app = express();
+app.use(express.json())
 
-app.use(express.json());
+app.use(userRouter);
+app.use('/admin', adminRouter);
+app.use('/course', couresRouter);
 
-app.post('/singup', async(req, res) => {
+const PORT = process.env.PORT || 5000;
 
-});
-
-app.post('/login', async(req, res) => {
-
-});
-
-app.get('/courses', async(req, res) => {
-
-});
-
-app.post('/Purchase', async(req, res) => {
-
-});
-
-//routes for admin
-
-app.post('/adminSignup', async(req, res) => {
-
-})
-
-app.post('/adminLogin', async(req, res) => {
-
-})
-
-app.post('/addCourse', async(req, res) => {
-
-})
-
-app.post('/deleteCourse', async(req, res) => {
-
-})
-
-app.post('/courseContent/:courseId', async(req, res) => {
-
-})
-
-const PORT = process.env.PORT;
-app.listen(PORT, () => console.log(`this server is running at http://localhost:${PORT}`))
+app.listen(PORT, ()=> console.log(`This server is running on http://localhost:${PORT}`))
