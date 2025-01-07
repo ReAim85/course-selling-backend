@@ -10,10 +10,12 @@ const Admin = new Schema({
 });
 
 const Courses = new Schema({
-    name: String,
+    title: String,
     author: String,
     authorid: ObjectId,
     price: Number,
+    imageUrl: String,
+    content: String
 
 });
 

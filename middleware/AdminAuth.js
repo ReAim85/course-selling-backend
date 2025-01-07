@@ -1,8 +1,8 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_ADMIN_SECRET;
 
-function userMiddleware(req, res, next) {
+function adminMiddleware(req, res, next) {
     const token = req.headers.token;
     if(!token) {
         res.status(403).json({
@@ -11,8 +11,8 @@ function userMiddleware(req, res, next) {
     }
 
     const decodedInfo = jwt.verify(token, JWT_SECRET)
-    req.username = decodedInfo.username;
-    if(req.username){
+    if(decodedInfo){
+        req.adminId = decodedInfo.id;
         next();
     }else{
         res.status(404).json({
@@ -21,4 +21,4 @@ function userMiddleware(req, res, next) {
     }
 }
 
-module.exports = userMiddleware;
+module.exports = adminMiddleware;

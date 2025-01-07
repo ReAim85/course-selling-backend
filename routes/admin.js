@@ -1,25 +1,102 @@
 const {Router} = require('express');
 const adminRouter = Router();
+const {AdminModel, CoursesModel} = require('../db.js');
+const jwt = require('jsonwebtoken');
+JWT_SECRET = process.env.JWT_ADMIN_SECRET;
+const {SignupSchema, LoginSchema} = require("../zod.js");
+const adminAuthMiddleware = require('../middleware/AdminAuth.js');
+const bcrypt = require('bcrypt');
 
 adminRouter.post('/Signup', async(req, res) => {
 
-        res.json({
-            message: "fuck you"
+    const bodyValidation = SignupSchema.safeParse(req.body);
+    if (!bodyValidation.success) {
+        return res.status(403).json({
+            message: "Incorrect data format"
+        });
+    }
+
+    const { name, email, password } = req.body;
+    const admin = await AdminModel.findOne({email: email});
+
+    if(admin){
+        return res.status(403).json({
+            message: "Admin already exists"
         })
-})
+    }
 
-adminRouter.post('/Login', async(req, res) => {
+    const hashedPassword = await bcrypt.hash(password, 10);
+        await AdminModel.create({
+        name: name,
+        email: email,
+        password: hashedPassword
+    })
+
+    res.json({message: "you're signed up"})
+});
+
+adminRouter.post('/login', async(req, res) => {
+    try {
+
+        const bodyValidation = LoginSchema.safeParse(req.body);
+    if (!bodyValidation.success) {
+        return res.status(403).json({
+            message: "Incorrect data format"
+        });
+    }
+
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required" });
+        }
+
+        const admin = await AdminModel.findOne({email: email});
+        if (!admin) {
+            return res.status(404).json({ message: "wrong credentials" });
+        }
+
+        const passwrodCheck = await bcrypt.compare(password, admin.password);
+        if(admin && passwrodCheck === true){
+            const token = jwt.sign({
+                id: admin._id
+            }, JWT_SECRET);
+        
+            res.json({
+                message: "you are logged in",
+                token : token
+            })
+
+        }else{
+            res.json({message: "wrong credentials"})
+        }
+
+    } catch(err){
+        res.json({message: "something went wrong"+ err})
+    }
+
+    });
+
+adminRouter.post('/addCourse', adminAuthMiddleware, async(req, res) => {
+        const adminId = req.adminId;
+        const author = AdminModel.find({_id: adminId})
+        const authorName = author.name;
+
+        const { title, content, imageUrl, price } = req.body;
+
+        const course = await CoursesModel.create({
+            title,
+            author:authorName,
+            authorid: adminId,
+            price,
+            imageUrl,
+            content
+        })
 
         res.json({
-            message: "fuck you"
+            message: "added course successfully",
+            courseID: course._id
         })
-})
 
-adminRouter.post('/addCourse', async(req, res) => {
-
-        res.json({
-            message: "fuck you"
-        })
 })
 
 adminRouter.post('/deleteCourse', async(req, res) => {
