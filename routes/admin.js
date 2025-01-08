@@ -8,7 +8,7 @@ const adminAuthMiddleware = require('../middleware/AdminAuth.js');
 const bcrypt = require('bcrypt');
 
 adminRouter.post('/Signup', async(req, res) => {
-
+    try{
     const bodyValidation = SignupSchema.safeParse(req.body);
     if (!bodyValidation.success) {
         return res.status(403).json({
@@ -33,6 +33,9 @@ adminRouter.post('/Signup', async(req, res) => {
     })
 
     res.json({message: "you're signed up"})
+} catch(err){
+    res.json({err:err})
+}
 });
 
 adminRouter.post('/login', async(req, res) => {
@@ -77,6 +80,7 @@ adminRouter.post('/login', async(req, res) => {
     });
 
 adminRouter.post('/addCourse', adminAuthMiddleware, async(req, res) => {
+    try{
         const adminId = req.adminId;
         const author = AdminModel.find({_id: adminId})
         const authorName = author.name;
@@ -95,22 +99,83 @@ adminRouter.post('/addCourse', adminAuthMiddleware, async(req, res) => {
         res.json({
             message: "added course successfully",
             courseID: course._id
-        })
+        });
+    } catch(err){
+        res.json({err: err})
+    }
 
 })
 
-adminRouter.post('/deleteCourse', async(req, res) => {
-
+adminRouter.delete('/deleteCourse', adminAuthMiddleware, async(req, res) => {
+    try{
+        const adminId = req.adminId;
+        const { courseId } = req.body;
+        const ownerShip = await CoursesModel.findOne({_id: courseId});
+        
+        if(!courseId) {
+            res.status(403).json({
+                message: "courseId is required"
+            });
+        } else {
+            if (ownerShip.authorid.toString() === adminId){
+                await CoursesModel.deleteOne({
+                    _id: courseId
+                });
+    
+                res.json({
+                    message: "course deleted successfully"
+                });
+            } else {
+                res.status(403).json({message: "You are not authorized"})
+            };
+            
+        };
+    
+    } catch (err) {
         res.json({
-            message: "fuck you"
-        })
-})
+            message: "course does not exist"
+        });
+    };
+});
 
-adminRouter.post('/courseContent/:courseId', async(req, res) => {
+adminRouter.put('/updateCourse', adminAuthMiddleware, async(req, res) => {
+    try{
+    const adminId = req.adminId;
+        const author = await AdminModel.findOne({_id: adminId});
+        const authorName = author.name;
+        const { title, content, imageUrl, price, courseId } = req.body;
+        const ownerShip = await CoursesModel.findOne({_id: courseId});
 
-        res.json({
-            message: "fuck you"
-        })
-})
+        const courseExist = await CoursesModel.findOne({_id: courseId});
+        if(!courseExist){
+            res.status(403).json({message: "course not found"})
+        }else{
+            if (ownerShip.authorid.toString() === adminId){
+                const course = await CoursesModel.updateOne({
+                    _id: courseId
+                }, { 
+                    title,
+                    author:authorName,
+                    authorid: adminId,
+                    price,
+                    imageUrl,
+                    content
+                });
+        
+                res.json({
+                    message: "Updated course successfully",
+                    courseID: course._id
+                });
+            } else {
+                res.status(403).json({
+                    message: "You are Not authorized"
+                })
+            } 
+    };
+    } catch (err){
+        res.json({message: "course Does Not exist", error: err});
+    };
+
+});
 
 module.exports = adminRouter;

@@ -6,6 +6,7 @@ const JWT = require('jsonwebtoken');
 JWT_SECRET = process.env.JWT_USER_SECRET;
 const {SignupSchema, LoginSchema} = require("../zod.js");
 
+
 userRouter.post('/signup', async(req, res) => {
     const bodyValidation = SignupSchema.safeParse(req.body);
     if (!bodyValidation.success) {
@@ -71,7 +72,7 @@ userRouter.post('/login', async(req, res) => {
 
 userRouter.post('/Purchase', async(req, res) => {
     res.json({
-        message: 'fuck you'
+        message: '5. let user view all their purchased courses'
     })
 });
 

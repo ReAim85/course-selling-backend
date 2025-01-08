@@ -2,10 +2,11 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_ADMIN_SECRET;
 
-function adminMiddleware(req, res, next) {
+async function adminMiddleware(req, res, next) {
+    try{
     const token = req.headers.token;
     if(!token) {
-        res.status(403).json({
+        return res.status(403).json({
             message: "Authorization token not found"
         });
     }
@@ -15,10 +16,15 @@ function adminMiddleware(req, res, next) {
         req.adminId = decodedInfo.id;
         next();
     }else{
-        res.status(404).json({
+       return res.status(404).json({
             Message: "you are not logged in"
         })
     }
+} catch(err) {
+    res.staus(500).json({
+        error: err.message
+    })
+}
 }
 
 module.exports = adminMiddleware;

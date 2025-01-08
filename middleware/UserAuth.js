@@ -1,24 +1,36 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_USER_SECRET;
+console.log(JWT_SECRET)
 
-function userMiddleware(req, res, next) {
-    const token = req.headers.token;
+async function userMiddleware(req, res, next) {
+    try{
+    const token = req.headers.authorization;
+    console.log(token)
+    
     if(!token) {
-        res.status(403).json({
+        return res.status(403).json({
             message: "Authorization token not found"
         });
     }
+    const decodedInfo = jwt.verify(token, JWT_SECRET);
+    console.log("decoded Token:" + decodedInfo);
 
-    const decodedInfo = jwt.verify(token, JWT_SECRET)
-    req.userId = decodedInfo;
-    if(req.userId){
+   
+    
+    if(decodedInfo){
+        req.userId = decodedInfo.id;
         next();
     }else{
-        res.status(404).json({
+        return res.status(404).json({ 
             Message: "you are not logged in"
         })
     }
+}catch(err) {
+    res.status(500).json({
+        error: err.message
+    })
+}
 }
 
 module.exports = userMiddleware;
