@@ -11,10 +11,26 @@ Use NPM to install necessary packages
 npm install
 ```
 
-## Usage through Postman
+## All the routes for Postman
 
 ```
-http://localhost:3000/signup
+http://localhost:3000/user/signup
 
-http://localhost:3000/signup
+http://localhost:3000/user/login
+
+http://localhost:3000/user/purchase
+
+http://localhost:3000/course/coursepreview
+
+http://localhost:3000/course/purchase
+
+http://localhost:3000/admin/signup
+
+http://localhost:3000/admin/login
+
+http://localhost:3000/admin/addCourse
+
+http://localhost:3000/admin/deleteCourse
+
+http://localhost:3000/admin/updateCourse
 ```
