@@ -4,7 +4,7 @@ const JWT_SECRET = process.env.JWT_ADMIN_SECRET;
 
 async function adminMiddleware(req, res, next) {
     try{
-    const token = req.headers.token;
+    const token = req.headers.authorization;
     if(!token) {
         return res.status(403).json({
             message: "Authorization token not found"

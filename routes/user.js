@@ -1,9 +1,10 @@
 const {Router} = require('express');
 const userRouter = Router();
-const {UserModel} = require('../db.js');
+const {UserModel, UserCoursesModel, CoursesModel} = require('../db.js');
 const bcrypt = require('bcrypt');
-const JWT = require('jsonwebtoken');
-JWT_SECRET = process.env.JWT_USER_SECRET;
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_USER_SECRET;
+const userMiddleware = require("../middleware/UserAuth.js");
 const {SignupSchema, LoginSchema} = require("../zod.js");
 
 
@@ -54,7 +55,7 @@ userRouter.post('/login', async(req, res) => {
 
     const passwrodCheck = await bcrypt.compare(password, user.password);
     if(user && passwrodCheck === true){
-        const token = JWT.sign({
+        const token = jwt.sign({
             id: user._id
         }, JWT_SECRET);
 
@@ -70,10 +71,27 @@ userRouter.post('/login', async(req, res) => {
     res.json({message: "something went wrong"+ err})
 }});
 
-userRouter.post('/Purchase', async(req, res) => {
-    res.json({
-        message: '5. let user view all their purchased courses'
-    })
+userRouter.get('/Purchase',userMiddleware, async(req, res) => {
+    try{
+        const userId = req.userId;
+        const purchasedCourses = await UserCoursesModel.find({userId: {"$in":userId}});
+        if(!purchasedCourses){
+            return res.json({message: "you have not purchased any course"})
+        }else{
+            const purchasedCoursesIds = purchasedCourses.map(x => x.courseId);
+            
+            const coursesData = await CoursesModel.find({_id:{"$in":purchasedCoursesIds}})
+            const formatedData = coursesData.map(x => ({
+                ImgUrl: x.imageUrl,
+                title: x.title,
+                content: x.content,
+                authorName: x.author
+            }));
+            res.json({message: "You have all these courese", Courses: formatedData})
+        }
+    } catch(err){
+        res.status(500).json({message: err.message})
+    }
 });
 
 module.exports = userRouter;

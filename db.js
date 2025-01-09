@@ -27,9 +27,9 @@ const User = new Schema({
 
 const UserCourses = new Schema({
     userId: ObjectId,
-    course: String,
+    courseId: ObjectId,
     dateOfPurchase: { type: Date, default: Date.now },
-    validity: { type: Date, default: Date.now },
+    validity: String,
     courseContent: String
 })
 

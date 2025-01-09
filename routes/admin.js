@@ -2,7 +2,7 @@ const {Router} = require('express');
 const adminRouter = Router();
 const {AdminModel, CoursesModel} = require('../db.js');
 const jwt = require('jsonwebtoken');
-JWT_SECRET = process.env.JWT_ADMIN_SECRET;
+const JWT_SECRET = process.env.JWT_ADMIN_SECRET;
 const {SignupSchema, LoginSchema} = require("../zod.js");
 const adminAuthMiddleware = require('../middleware/AdminAuth.js');
 const bcrypt = require('bcrypt');
@@ -82,14 +82,14 @@ adminRouter.post('/login', async(req, res) => {
 adminRouter.post('/addCourse', adminAuthMiddleware, async(req, res) => {
     try{
         const adminId = req.adminId;
-        const author = AdminModel.find({_id: adminId})
-        const authorName = author.name;
+        const author = await AdminModel.find({_id: adminId})
+        const authorName = author.map(x=> x.name);
 
         const { title, content, imageUrl, price } = req.body;
 
         const course = await CoursesModel.create({
             title,
-            author:authorName,
+            author:authorName[0],
             authorid: adminId,
             price,
             imageUrl,

@@ -1,9 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const userAuthMiddleware = require('./middleware/UserAuth.js');
-const adminAuthMiddleware = require('./middleware/AdminAuth.js')
 const mongoose = require('mongoose');
-const { AdminModel, CoursesModel, UserModel, UserCoursesModel } = require('./db.js');
 const userRouter = require('./routes/user.js');
 const adminRouter = require('./routes/admin.js');
 const couresRouter = require('./routes/course.js');
