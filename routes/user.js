@@ -59,6 +59,12 @@ userRouter.post('/login', async(req, res) => {
             id: user._id
         }, JWT_SECRET);
 
+        res.cookie('authorization', token, {
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: true
+        })
+
         res.json({
             message: "you are logged in",
             token : token

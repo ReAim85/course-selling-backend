@@ -59,18 +59,23 @@ adminRouter.post('/login', async(req, res) => {
         }
 
         const passwrodCheck = await bcrypt.compare(password, admin.password);
-        if(admin && passwrodCheck === true){
+        if(admin && passwordCheck === true){
             const token = jwt.sign({
                 id: admin._id
             }, JWT_SECRET);
-        
+
+            res.cookie('authorization', token, {
+                httpOnly: true,
+                sameSite: 'strict',
+                secure: true
+            });
             res.json({
                 message: "you are logged in",
                 token : token
             })
 
         }else{
-            res.json({message: "wrong credentials"})
+            res.status(401).json({message: "wrong credentials"})    
         }
 
     } catch(err){

@@ -4,7 +4,7 @@ const JWT_SECRET = process.env.JWT_USER_SECRET;
 
 async function userMiddleware(req, res, next) {
     try{
-    const token = req.headers.authorization;
+    const token = req.cookies.authorization;
     
     if(!token) {
         return res.status(403).json({
@@ -21,9 +21,11 @@ async function userMiddleware(req, res, next) {
         })
     }
 }catch(err) {
-    res.status(500).json({
-        error: err.message
-    })
+    res.clearCookie('authorization');
+        if (err.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: "Session expired, please log in again" });
+        }
+        return res.status(500).json({ error: "Internal server error: " + err.message });
 }
 }
 
